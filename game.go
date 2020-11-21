@@ -5,6 +5,7 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
+	"github.com/jakecoffman/cp"
 )
 
 type Game struct {
@@ -17,7 +18,13 @@ func NewGame(md *MapData) *Game {
 
 	objects := make([]GameObject, 0, 10)
 	objects = append(objects, LoadMap(space, md))
+	space.Add(NewSegmentShape(cp.NewStaticBody(), "wall", 0, height, width, height))
+	space.Add(NewSegmentShape(cp.NewStaticBody(), "wall", 0, height, 0, 0))
+	space.Add(NewSegmentShape(cp.NewStaticBody(), "wall", 0, 0, width, 0))
+	space.Add(NewSegmentShape(cp.NewStaticBody(), "wall", width, height, width, 0))
+
 	objects = append(objects, NewBall(space, width/2, height/2))
+	objects = append(objects, NewPlayer(space, NewKeyboard(KeyboardDefaults), width/2, height/2))
 
 	return &Game{
 		space:   space,
@@ -30,7 +37,7 @@ func (g *Game) Update() error {
 	// return the error after the update
 	var err error
 	for _, o := range g.objects {
-		e := o.Update()
+		e := o.Update(g.space)
 		if e != nil {
 			err = e
 		}

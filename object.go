@@ -7,35 +7,8 @@ import (
 )
 
 type GameObject interface {
-	Update() error
+	Update(space *Space) error
 	Draw(screen *ebiten.Image)
-}
-
-type Space struct {
-	space   *resolv.Space
-	cpspace *cp.Space
-}
-
-func NewSpace() *Space {
-	cpspace := cp.NewSpace()
-	cpspace.Iterations = 10
-	cpspace.SetGravity(cp.Vector{X: 0, Y: 500})
-	cpspace.SleepTimeThreshold = 0.5
-
-	return &Space{
-		space:   resolv.NewSpace(),
-		cpspace: cpspace,
-	}
-}
-
-func (s *Space) Add(shape *Shape) {
-	s.space.Add(shape.collider)
-	s.cpspace.AddBody(shape.Body())
-	s.cpspace.AddShape(shape.Shape)
-}
-
-func (s *Space) Step(dt float64) {
-	s.cpspace.Step(1.0 / float64(ebiten.MaxTPS()))
 }
 
 type Shape struct {
@@ -77,7 +50,7 @@ func NewRectangleShape(b *cp.Body, tag string, x, y, w, h int) *Shape {
 	shape := cp.NewBox(b, float64(w), float64(h), 0)
 	shape.SetElasticity(1)
 	shape.SetFriction(1)
-	collider := resolv.NewRectangle(int32(x), int32(y), int32(w), int32(h))
+	collider := resolv.NewRectangle(int32(x-w/2), int32(y-h/2), int32(w), int32(h))
 	collider.AddTags(tag)
 
 	return &Shape{
@@ -89,5 +62,10 @@ func NewRectangleShape(b *cp.Body, tag string, x, y, w, h int) *Shape {
 // No need to call Update on static bodies
 func (s *Shape) Update() {
 	pos := s.Body().Position()
-	s.collider.SetXY(int32(pos.X), int32(pos.Y))
+	switch t := s.collider.(type) {
+	case *resolv.Rectangle:
+		s.collider.SetXY(int32(pos.X)-t.W/2, int32(pos.Y)-t.H/2)
+	default:
+		s.collider.SetXY(int32(pos.X), int32(pos.Y))
+	}
 }

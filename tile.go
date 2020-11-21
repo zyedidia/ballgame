@@ -20,7 +20,7 @@ type Tile struct {
 }
 
 func NewTile(space *Space, tilesheet *ebiten.Image, rect image.Rectangle, x, y int) *Tile {
-	shape := NewRectangleShape(cp.NewStaticBody(), "wall", x+rect.Dx()/2, y+rect.Dy()/2, rect.Dx(), rect.Dy())
+	shape := NewRectangleShape(cp.NewStaticBody(), "wall", x, y, rect.Dx(), rect.Dy())
 	space.Add(shape)
 	return &Tile{
 		tilesheet: tilesheet,
@@ -29,7 +29,7 @@ func NewTile(space *Space, tilesheet *ebiten.Image, rect image.Rectangle, x, y i
 	}
 }
 
-func (t *Tile) Update() error {
+func (t *Tile) Update(*Space) error {
 	return nil
 }
 

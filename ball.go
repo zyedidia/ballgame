@@ -25,7 +25,7 @@ func NewBall(space *Space, x, y int) *Ball {
 	}
 }
 
-func (b *Ball) Update() error {
+func (b *Ball) Update(*Space) error {
 	b.shape.Update()
 	return nil
 }

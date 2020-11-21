@@ -20,7 +20,11 @@ func main() {
 	ebiten.SetWindowResizable(true)
 
 	assets = NewAssets("assets")
-	assets.LoadImages()
+	err := assets.LoadImages()
+	if err != nil {
+		log.Fatal(err)
+	}
+	assets.LoadAnimations()
 
 	// bytes, _ := json.MarshalIndent(DefaultMapData(), "", "    ")
 	// fmt.Println(string(bytes))

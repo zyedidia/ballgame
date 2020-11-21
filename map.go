@@ -21,13 +21,13 @@ func DefaultMapData() *MapData {
 		tiles[i] = make([]TileData, w)
 		for j := range tiles[i] {
 			if i == 0 || i == len(tiles)-1 {
-				tiles[i][j].Kind = 1
+				// tiles[i][j].Kind = 1
 			}
-			tiles[i][0].Kind = 1
+			// tiles[i][0].Kind = 1
 			tiles[i][j].W = 16
 			tiles[i][j].H = 16
-			tiles[i][j].X = j * 16
-			tiles[i][j].Y = i * 16
+			tiles[i][j].X = j*16 + 8
+			tiles[i][j].Y = i*16 + 8
 		}
 	}
 
@@ -74,7 +74,7 @@ func LoadMap(space *Space, data *MapData) *Map {
 	}
 }
 
-func (m *Map) Update() error {
+func (m *Map) Update(*Space) error {
 	return nil
 }
 
