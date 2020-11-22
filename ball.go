@@ -9,7 +9,7 @@ const (
 	bw = 8
 	bh = 8
 
-	bgravity = 0.1
+	bgravity = 0.4
 )
 
 type Ball struct {
@@ -34,20 +34,20 @@ func NewBall(space *resolv.Space, x, y int) *Ball {
 func (b *Ball) Update(space *resolv.Space) {
 	b.velocity.Y += bgravity
 
-	dx, dy := b.velocity.X, b.velocity.Y
+	dx, dy := int32(b.velocity.X), int32(b.velocity.Y)
 	walls := space.FilterByTags("wall")
-	if res := walls.Resolve(b.shape.collider, int32(dx), 0); res.Colliding() && !res.Teleporting {
+	if res := walls.Resolve(b.shape.collider, dx, 0); res.Colliding() && !res.Teleporting {
 		b.shape.pos.X += float64(res.ResolveX)
 		b.velocity.X *= -1
 	} else {
-		b.shape.pos.X += dx
+		b.shape.pos.X += float64(dx)
 	}
 
-	if res := walls.Resolve(b.shape.collider, 0, int32(dy)); res.Colliding() && !res.Teleporting {
+	if res := walls.Resolve(b.shape.collider, 0, dy); res.Colliding() && !res.Teleporting {
 		b.shape.pos.Y += float64(res.ResolveY)
-		b.velocity.Y *= -0.8
+		b.velocity.Y *= -0.95
 	} else {
-		b.shape.pos.Y += dy
+		b.shape.pos.Y += float64(dy)
 	}
 
 	b.shape.Update()

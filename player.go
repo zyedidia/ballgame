@@ -93,7 +93,7 @@ func (p *Player) Update(space *resolv.Space) {
 		if hit > 0 {
 			ball := collision.ShapeB.GetData().(*Ball)
 			fmt.Println("Yes")
-			ball.velocity.Y *= force_accel
+			ball.velocity.Y = 10
 		}
 	}
 
