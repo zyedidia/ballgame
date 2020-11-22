@@ -15,7 +15,7 @@ const (
 )
 
 func main() {
-	// ebiten.SetFullscreen(true)
+	ebiten.SetFullscreen(true)
 	ebiten.SetWindowTitle("Ball Game")
 	ebiten.SetWindowResizable(true)
 

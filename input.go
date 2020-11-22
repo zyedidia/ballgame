@@ -130,6 +130,10 @@ func NewGamepad(id ebiten.GamepadID, bindings map[Action]GamepadInput) *Gamepad 
 }
 
 func (g *Gamepad) Get(a Action) float64 {
+	if g == nil {
+		return 0.0
+	}
+
 	input := g.bindings[a]
 	switch t := input.(type) {
 	case GamepadAxis:

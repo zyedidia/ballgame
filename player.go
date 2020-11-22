@@ -3,15 +3,23 @@ package main
 import (
 	"fmt"
 
+	"github.com/SolarLune/resolv/resolv"
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/jakecoffman/cp"
 )
 
 const (
 	pw = 16
 	ph = 16
+	cw = 11
+	ch = 16
 
-	gravity = 0.1
+	maxspd      = 2.0
+	friction    = 0.2
+	accel       = 0.5
+	jumpspd     = 6.0
+	force_accel = 1.1
+
+	pgravity = 0.4
 )
 
 type Player struct {
@@ -19,11 +27,13 @@ type Player struct {
 	shape    *Shape
 	img      *AnimImage
 	velocity Vec2f
+	flip     bool
+	force    float64
 }
 
-func NewPlayer(space *Space, input Input, x, y int) *Player {
-	shape := NewRectangleShape(cp.NewKinematicBody(), "player", x, y, pw, ph)
-	space.Add(shape)
+func NewPlayer(space *resolv.Space, input Input, x, y int) *Player {
+	shape := NewRectangleShape("player", x, y, cw, ch)
+	shape.AddTo(space)
 	return &Player{
 		input: input,
 		shape: shape,
@@ -37,46 +47,87 @@ func NewPlayer(space *Space, input Input, x, y int) *Player {
 
 func (p *Player) SetAnimation(s string) {
 	p.img.anim = assets.GetAnimation(s)
-	p.img.count = 0
 }
 
-func (p *Player) Update(space *Space) error {
-	pos := p.shape.Body().Position()
-	p.velocity.X = p.input.Get(ActionRight) - p.input.Get(ActionLeft)
+func (p *Player) Update(space *resolv.Space) {
+	hit := p.input.Get(ActionHit)
+	jump := p.input.Get(ActionJump)
+	move := p.input.Get(ActionRight) - p.input.Get(ActionLeft)
 
-	dx, dy := p.velocity.X, p.velocity.Y
-	p.velocity.Y += gravity
-
-	fmt.Println(dx)
-
-	walls := space.FilterByTags("wall")
-	collision := walls.Resolve(p.shape.collider, 0, int32(dy))
-	if collision.Colliding() {
-		// pos.X += float64(collision.ResolveX)
-		pos.Y += float64(collision.ResolveY)
-		// p.velocity.X = 0
-		p.velocity.Y = 0
+	if move != 0 {
+		p.SetAnimation("player_run")
 	} else {
-		if int(dy) != 0 {
-			pos.Y += dy
+		p.SetAnimation("player_idle")
+	}
+
+	// p.flip unchanged if move = 0
+	if move < 0 {
+		p.flip = true
+	} else if move > 0 {
+		p.flip = false
+	}
+
+	p.velocity.Y += pgravity
+
+	if p.velocity.X > friction {
+		p.velocity.X -= friction
+	} else if p.velocity.X < -friction {
+		p.velocity.X += friction
+	} else {
+		p.velocity.X = 0
+	}
+
+	p.velocity.X += accel * move
+
+	if p.velocity.X > maxspd {
+		p.velocity.X = maxspd
+	} else if p.velocity.X < -maxspd {
+		p.velocity.X = -maxspd
+	}
+
+	dx, dy := int32(p.velocity.X), int32(p.velocity.Y)
+
+	balls := space.FilterByTags("ball")
+	collision := balls.Resolve(p.shape.collider, dx, dy)
+	if collision.Colliding() {
+		if hit > 0 {
+			ball := collision.ShapeB.GetData().(*Ball)
+			fmt.Println("Yes")
+			ball.velocity.Y *= force_accel
 		}
 	}
-	if int(dx) != 0 {
-		pos.X += dx
+
+	down := space.Resolve(p.shape.collider, 0, ph/2)
+	onGround := down.Colliding()
+
+	if jump > 0 && onGround {
+		p.velocity.Y = -jumpspd
 	}
 
-	p.shape.Body().SetPosition(pos)
+	walls := space.FilterByTags("wall")
+	if res := walls.Resolve(p.shape.collider, dx, 0); res.Colliding() {
+		dx = res.ResolveX
+		p.velocity.X = 0
+	}
+	p.shape.pos.X += float64(dx)
+
+	if res := walls.Resolve(p.shape.collider, 0, dy); res.Colliding() {
+		dy = res.ResolveY
+		p.velocity.Y = 0
+	}
+	p.shape.pos.Y += float64(dy)
+
 	p.shape.Update()
 	p.img.Update()
-	return nil
 }
 
 func (p *Player) Draw(screen *ebiten.Image) {
-	pos := p.shape.Body().Position()
-
 	op := &ebiten.DrawImageOptions{}
 	op.GeoM.Translate(-pw/2, -ph/2)
-	op.GeoM.Translate(pos.X, pos.Y)
+	if p.flip {
+		op.GeoM.Scale(-1, 1)
+	}
+	op.GeoM.Translate(p.shape.pos.X, p.shape.pos.Y)
 
 	screen.DrawImage(p.img.Image(), op)
 }

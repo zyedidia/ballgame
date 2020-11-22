@@ -2,7 +2,9 @@ package main
 
 import (
 	"image"
+	"math/rand"
 
+	"github.com/SolarLune/resolv/resolv"
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
@@ -21,19 +23,20 @@ func DefaultMapData() *MapData {
 		tiles[i] = make([]TileData, w)
 		for j := range tiles[i] {
 			if i == 0 || i == len(tiles)-1 {
-				// tiles[i][j].Kind = 1
+				tiles[i][j].Kind = rand.Intn(4) + 1
 			}
-			// tiles[i][0].Kind = 1
 			tiles[i][j].W = 16
 			tiles[i][j].H = 16
 			tiles[i][j].X = j*16 + 8
 			tiles[i][j].Y = i*16 + 8
 		}
+		tiles[i][0].Kind = rand.Intn(4) + 1
+		tiles[i][len(tiles[i])-1].Kind = rand.Intn(4) + 1
 	}
 
 	return &MapData{
-		Bgs:       []string{"bg_0.png", "bg_1.png", "bg_2.png"},
-		Tilesheet: "tileset.png",
+		Bgs:       []string{"bg_0.png", "temple.png"},
+		Tilesheet: "tiles.png",
 		W:         w,
 		H:         h,
 		Tiles:     tiles,
@@ -46,7 +49,7 @@ type Map struct {
 	tiles     []*Tile
 }
 
-func LoadMap(space *Space, data *MapData) *Map {
+func LoadMap(space *resolv.Space, data *MapData) *Map {
 	tilesheet := assets.GetImage(data.Tilesheet)
 	bgs := make([]*ebiten.Image, len(data.Bgs))
 	for i, bg := range data.Bgs {
@@ -60,6 +63,12 @@ func LoadMap(space *Space, data *MapData) *Map {
 			switch t.Kind {
 			case 1:
 				rect = image.Rect(0, 0, t.W, t.H)
+			case 2:
+				rect = image.Rect(16, 0, 16+t.W, t.H)
+			case 3:
+				rect = image.Rect(0, 16, t.W, 16+t.H)
+			case 4:
+				rect = image.Rect(16, 16, 16+t.W, 16+t.H)
 			default:
 				continue
 			}
@@ -74,8 +83,7 @@ func LoadMap(space *Space, data *MapData) *Map {
 	}
 }
 
-func (m *Map) Update(*Space) error {
-	return nil
+func (m *Map) Update(*resolv.Space) {
 }
 
 func (m *Map) Draw(screen *ebiten.Image) {
