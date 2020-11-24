@@ -6,8 +6,9 @@ import (
 )
 
 const (
-	bw = 8
-	bh = 8
+	bw       = 8
+	bh       = 8
+	maxbally = 8
 
 	bgravity = 0.4
 )
@@ -35,19 +36,36 @@ func (b *Ball) Update(space *resolv.Space) {
 	b.velocity.Y += bgravity
 
 	dx, dy := int32(b.velocity.X), int32(b.velocity.Y)
-	walls := space.FilterByTags("wall")
-	if res := walls.Resolve(b.shape.collider, dx, 0); res.Colliding() && !res.Teleporting {
-		b.shape.pos.X += float64(res.ResolveX)
-		b.velocity.X *= -1
+
+	player := space.FilterByTags("player")
+	if res := player.Resolve(b.shape.collider, 0, dy); res.Colliding() && !res.Teleporting {
+		b.shape.pos.Y += float64(res.ResolveY)
+		b.velocity.Y *= -1.1
 	} else {
-		b.shape.pos.X += float64(dx)
+		walls := space.FilterByTags("wall")
+		if res := walls.Resolve(b.shape.collider, dx, 0); res.Colliding() && !res.Teleporting {
+			b.shape.pos.X += float64(res.ResolveX)
+			b.velocity.X *= -1
+			// s := assets.GetSound("bounce.ogg")
+			// s.Rewind()
+			// s.Play()
+		} else {
+			b.shape.pos.X += float64(dx)
+		}
+
+		if res := walls.Resolve(b.shape.collider, 0, dy); res.Colliding() && !res.Teleporting {
+			b.shape.pos.Y += float64(res.ResolveY)
+			b.velocity.Y *= -0.95
+			// s := assets.GetSound("bounce.ogg")
+			// s.Rewind()
+			// s.Play()
+		} else {
+			b.shape.pos.Y += float64(dy)
+		}
 	}
 
-	if res := walls.Resolve(b.shape.collider, 0, dy); res.Colliding() && !res.Teleporting {
-		b.shape.pos.Y += float64(res.ResolveY)
-		b.velocity.Y *= -0.95
-	} else {
-		b.shape.pos.Y += float64(dy)
+	if b.velocity.Y > maxbally {
+		b.velocity.Y = maxbally
 	}
 
 	b.shape.Update()

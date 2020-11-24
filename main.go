@@ -24,6 +24,14 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	err = assets.LoadMusic()
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = assets.LoadSound()
+	if err != nil {
+		log.Fatal(err)
+	}
 	assets.LoadAnimations()
 
 	// bytes, _ := json.MarshalIndent(DefaultMapData(), "", "    ")

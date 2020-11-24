@@ -35,7 +35,7 @@ func DefaultMapData() *MapData {
 	}
 
 	return &MapData{
-		Bgs:       []string{"bg_0.png", "temple.png"},
+		Bgs:       []string{"bg_0.png", "temple2.png"},
 		Tilesheet: "tiles.png",
 		W:         w,
 		H:         h,

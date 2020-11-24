@@ -13,6 +13,8 @@ type Game struct {
 func NewGame(md *MapData) *Game {
 	space := resolv.NewSpace()
 
+	// assets.GetMusic("music.mp3").Play()
+
 	objects := make([]GameObject, 0, 10)
 	objects = append(objects, LoadMap(space, md))
 	NewSegmentShape("wall", 0, height, width, height).AddTo(space)

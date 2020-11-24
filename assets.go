@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"image"
 	_ "image/png"
 	"log"
@@ -9,6 +8,9 @@ import (
 	"path/filepath"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/audio"
+	"github.com/hajimehoshi/ebiten/v2/audio/mp3"
+	"github.com/hajimehoshi/ebiten/v2/audio/vorbis"
 )
 
 var assets *AssetManager
@@ -16,6 +18,8 @@ var assets *AssetManager
 type AssetManager struct {
 	dir    string
 	images map[string]*ebiten.Image
+	music  map[string]*audio.Player
+	sound  map[string]*audio.Player
 	anims  map[string]*Animation
 }
 
@@ -23,16 +27,65 @@ func NewAssets(dir string) *AssetManager {
 	return &AssetManager{
 		dir:    dir,
 		images: make(map[string]*ebiten.Image),
+		music:  make(map[string]*audio.Player),
+		sound:  make(map[string]*audio.Player),
 		anims:  make(map[string]*Animation),
 	}
 }
 
 func (a *AssetManager) LoadSound() error {
-	return errors.New("Not implemented")
+	imagedir := filepath.Join(a.dir, "sound")
+
+	return filepath.Walk(imagedir, func(path string, info os.FileInfo, err error) error {
+		if info.IsDir() || filepath.Ext(path) != ".ogg" {
+			return nil
+		}
+
+		f, err := os.Open(path)
+		if err != nil {
+			return err
+		}
+		s, err := vorbis.Decode(audioctx, f)
+		if err != nil {
+			return err
+		}
+		player, err := audio.NewPlayer(audioctx, s)
+		if err != nil {
+			return err
+		}
+		a.sound[info.Name()] = player
+		log.Println("Loaded", path)
+
+		return nil
+		// return f.Close()
+	})
 }
 
 func (a *AssetManager) LoadMusic() error {
-	return errors.New("Not implemented")
+	imagedir := filepath.Join(a.dir, "music")
+
+	return filepath.Walk(imagedir, func(path string, info os.FileInfo, err error) error {
+		if info.IsDir() || filepath.Ext(path) != ".mp3" {
+			return nil
+		}
+
+		f, err := os.Open(path)
+		if err != nil {
+			return err
+		}
+		s, err := mp3.Decode(audioctx, f)
+		if err != nil {
+			return err
+		}
+		player, err := audio.NewPlayer(audioctx, s)
+		if err != nil {
+			return err
+		}
+		a.music[info.Name()] = player
+		log.Println("Loaded", path)
+
+		return nil
+	})
 }
 
 func (a *AssetManager) LoadImages() error {
@@ -77,11 +130,15 @@ func (a *AssetManager) LoadAnimations() error {
 }
 
 func (a *AssetManager) GetImage(name string) *ebiten.Image {
-	if img, ok := a.images[name]; ok {
-		return img
-	}
-	log.Fatal("Could not load", name)
-	return nil
+	return a.images[name]
+}
+
+func (a *AssetManager) GetSound(name string) *audio.Player {
+	return a.sound[name]
+}
+
+func (a *AssetManager) GetMusic(name string) *audio.Player {
+	return a.music[name]
 }
 
 func (a *AssetManager) GetAnimation(name string) *Animation {

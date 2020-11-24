@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/SolarLune/resolv/resolv"
 	"github.com/hajimehoshi/ebiten/v2"
 )
@@ -50,7 +48,7 @@ func (p *Player) SetAnimation(s string) {
 }
 
 func (p *Player) Update(space *resolv.Space) {
-	hit := p.input.Get(ActionHit)
+	// hit := p.input.Get(ActionHit)
 	jump := p.input.Get(ActionJump)
 	move := p.input.Get(ActionRight) - p.input.Get(ActionLeft)
 
@@ -87,24 +85,23 @@ func (p *Player) Update(space *resolv.Space) {
 
 	dx, dy := int32(p.velocity.X), int32(p.velocity.Y)
 
-	balls := space.FilterByTags("ball")
-	collision := balls.Resolve(p.shape.collider, dx, dy)
-	if collision.Colliding() {
-		if hit > 0 {
-			ball := collision.ShapeB.GetData().(*Ball)
-			fmt.Println("Yes")
-			ball.velocity.Y = 10
-		}
-	}
+	// balls := space.FilterByTags("ball")
+	// collision := balls.Resolve(p.shape.collider, dx, dy)
+	// if collision.Colliding() {
+	// 	if hit > 0 {
+	// 		ball := collision.ShapeB.GetData().(*Ball)
+	// 		ball.velocity.Y = 10
+	// 	}
+	// }
 
-	down := space.Resolve(p.shape.collider, 0, ph/2)
+	walls := space.FilterByTags("wall")
+	down := walls.Resolve(p.shape.collider, 0, ph/2)
 	onGround := down.Colliding()
 
 	if jump > 0 && onGround {
 		p.velocity.Y = -jumpspd
 	}
 
-	walls := space.FilterByTags("wall")
 	if res := walls.Resolve(p.shape.collider, dx, 0); res.Colliding() {
 		dx = res.ResolveX
 		p.velocity.X = 0
