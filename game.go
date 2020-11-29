@@ -1,9 +1,14 @@
 package main
 
 import (
+	"strconv"
+
 	"github.com/SolarLune/resolv/resolv"
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 )
+
+var score int
 
 type Game struct {
 	space   *resolv.Space
@@ -24,6 +29,7 @@ func NewGame(md *MapData) *Game {
 
 	objects = append(objects, NewBall(space, width/2, height/2))
 	objects = append(objects, NewPlayer(space, NewKeyboard(KeyboardDefaults), width/2, height/2))
+	objects = append(objects, NewRing(space, width/2, height/7))
 
 	return &Game{
 		space:   space,
@@ -47,6 +53,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	for _, o := range g.objects {
 		o.Draw(screen)
 	}
+	ebitenutil.DebugPrint(screen, "Score: "+strconv.Itoa(score))
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {

@@ -11,6 +11,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/audio"
 	"github.com/hajimehoshi/ebiten/v2/audio/mp3"
 	"github.com/hajimehoshi/ebiten/v2/audio/vorbis"
+	"github.com/shurcooL/httpfs/vfsutil"
 )
 
 var assets *AssetManager
@@ -34,14 +35,14 @@ func NewAssets(dir string) *AssetManager {
 }
 
 func (a *AssetManager) LoadSound() error {
-	imagedir := filepath.Join(a.dir, "sound")
+	dir := filepath.Join(a.dir, "sound")
 
-	return filepath.Walk(imagedir, func(path string, info os.FileInfo, err error) error {
+	return vfsutil.Walk(assetfs, dir, func(path string, info os.FileInfo, err error) error {
 		if info.IsDir() || filepath.Ext(path) != ".ogg" {
 			return nil
 		}
 
-		f, err := os.Open(path)
+		f, err := assetfs.Open(path)
 		if err != nil {
 			return err
 		}
@@ -62,14 +63,14 @@ func (a *AssetManager) LoadSound() error {
 }
 
 func (a *AssetManager) LoadMusic() error {
-	imagedir := filepath.Join(a.dir, "music")
+	dir := filepath.Join(a.dir, "music")
 
-	return filepath.Walk(imagedir, func(path string, info os.FileInfo, err error) error {
+	return vfsutil.Walk(assetfs, dir, func(path string, info os.FileInfo, err error) error {
 		if info.IsDir() || filepath.Ext(path) != ".mp3" {
 			return nil
 		}
 
-		f, err := os.Open(path)
+		f, err := assetfs.Open(path)
 		if err != nil {
 			return err
 		}
@@ -89,14 +90,14 @@ func (a *AssetManager) LoadMusic() error {
 }
 
 func (a *AssetManager) LoadImages() error {
-	imagedir := filepath.Join(a.dir, "img")
+	dir := filepath.Join(a.dir, "img")
 
-	return filepath.Walk(imagedir, func(path string, info os.FileInfo, err error) error {
+	return vfsutil.Walk(assetfs, dir, func(path string, info os.FileInfo, err error) error {
 		if info.IsDir() || filepath.Ext(path) != ".png" {
 			return nil
 		}
 
-		f, err := os.Open(path)
+		f, err := assetfs.Open(path)
 		if err != nil {
 			return err
 		}

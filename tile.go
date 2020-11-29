@@ -29,8 +29,7 @@ func NewTile(space *resolv.Space, tilesheet *ebiten.Image, rect image.Rectangle,
 	}
 }
 
-func (t *Tile) Update(*resolv.Space) {
-}
+func (t *Tile) Update(*resolv.Space) {}
 
 func (t *Tile) Draw(screen *ebiten.Image) {
 	pos := t.shape.pos

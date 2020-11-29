@@ -3,6 +3,8 @@ package main
 import (
 	"errors"
 	"log"
+	"math/rand"
+	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
 )
@@ -15,11 +17,13 @@ const (
 )
 
 func main() {
+	rand.Seed(time.Now().UnixNano())
+
 	ebiten.SetFullscreen(true)
 	ebiten.SetWindowTitle("Ball Game")
 	ebiten.SetWindowResizable(true)
 
-	assets = NewAssets("assets")
+	assets = NewAssets("/")
 	err := assets.LoadImages()
 	if err != nil {
 		log.Fatal(err)
