@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
 type Action int
@@ -17,6 +18,7 @@ const (
 
 type Input interface {
 	Get(a Action) float64
+	GetJustPressed(a Action) float64
 }
 
 type Keyboard struct {
@@ -41,6 +43,14 @@ func NewKeyboard(bindings map[Action]ebiten.Key) *Keyboard {
 func (k *Keyboard) Get(a Action) float64 {
 	key := k.bindings[a]
 	if ebiten.IsKeyPressed(key) {
+		return 1.0
+	}
+	return 0.0
+}
+
+func (k *Keyboard) GetJustPressed(a Action) float64 {
+	key := k.bindings[a]
+	if inpututil.IsKeyJustPressed(key) {
 		return 1.0
 	}
 	return 0.0
@@ -145,6 +155,28 @@ func (g *Gamepad) Get(a Action) float64 {
 		}
 	case GamepadButton:
 		if ebiten.IsGamepadButtonPressed(g.id, t.button) {
+			return 1.0
+		}
+	}
+	return 0.0
+}
+
+func (g *Gamepad) GetJustPressed(a Action) float64 {
+	if g == nil {
+		return 0.0
+	}
+
+	input := g.bindings[a]
+	switch t := input.(type) {
+	case GamepadAxis:
+		value := ebiten.GamepadAxis(g.id, t.axis)
+		value += t.shift
+		value *= t.scale
+		if value >= t.deadzone {
+			return value
+		}
+	case GamepadButton:
+		if inpututil.IsGamepadButtonJustPressed(g.id, t.button) {
 			return 1.0
 		}
 	}

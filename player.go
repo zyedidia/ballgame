@@ -13,26 +13,30 @@ const (
 
 	maxspd      = 2.0
 	friction    = 0.2
-	accel       = 0.5
-	jumpspd     = 6.0
+	accel       = 0.4
+	jumpspd     = 5.0
+	dashspd     = 10.0
+	dashlen     = 2
 	force_accel = 1.1
 
-	pgravity = 0.4
+	pgravity = 0.3
 )
 
 type Player struct {
-	input    Input
-	shape    *Shape
-	img      *AnimImage
-	velocity Vec2f
-	flip     bool
-	force    float64
+	input     Input
+	shape     *Shape
+	img       *AnimImage
+	velocity  Vec2f
+	flip      bool
+	force     float64
+	dashcount int
+	dashdir   int
 }
 
 func NewPlayer(space *resolv.Space, input Input, x, y int) *Player {
 	shape := NewRectangleShape("player", x, y, cw, ch)
 	shape.AddTo(space)
-	return &Player{
+	p := &Player{
 		input: input,
 		shape: shape,
 		img: &AnimImage{
@@ -41,6 +45,8 @@ func NewPlayer(space *resolv.Space, input Input, x, y int) *Player {
 		},
 		velocity: Vec2f{0, 0},
 	}
+	shape.collider.SetData(p)
+	return p
 }
 
 func (p *Player) SetAnimation(s string) {
@@ -51,11 +57,21 @@ func (p *Player) Update(space *resolv.Space) {
 	// hit := p.input.Get(ActionHit)
 	jump := p.input.Get(ActionJump)
 	move := p.input.Get(ActionRight) - p.input.Get(ActionLeft)
+	dash := p.input.GetJustPressed(ActionDash)
 
 	if move != 0 {
 		p.SetAnimation("player_run")
 	} else {
 		p.SetAnimation("player_idle")
+	}
+
+	if dash > 0 && move != 0 {
+		p.dashcount = 1
+		if move > 0 {
+			p.dashdir = 1
+		} else {
+			p.dashdir = -1
+		}
 	}
 
 	// p.flip unchanged if move = 0
@@ -75,12 +91,22 @@ func (p *Player) Update(space *resolv.Space) {
 		p.velocity.X = 0
 	}
 
-	p.velocity.X += accel * move
+	if p.dashcount > 0 {
+		p.velocity.X = float64(dashspd * p.dashdir)
 
-	if p.velocity.X > maxspd {
-		p.velocity.X = maxspd
-	} else if p.velocity.X < -maxspd {
-		p.velocity.X = -maxspd
+		if p.dashcount >= dashlen {
+			p.dashcount = 0
+		} else {
+			p.dashcount++
+		}
+	} else {
+		p.velocity.X += accel * move
+
+		if p.velocity.X > maxspd {
+			p.velocity.X = maxspd
+		} else if p.velocity.X < -maxspd {
+			p.velocity.X = -maxspd
+		}
 	}
 
 	dx, dy := int32(p.velocity.X), int32(p.velocity.Y)

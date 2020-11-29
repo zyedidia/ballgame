@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/SolarLune/resolv/resolv"
 	"github.com/hajimehoshi/ebiten/v2"
 )
@@ -8,9 +10,9 @@ import (
 const (
 	bw       = 8
 	bh       = 8
-	maxbally = 8
+	maxbally = 6
 
-	bgravity = 0.4
+	bgravity = 0.3
 )
 
 type Ball struct {
@@ -38,8 +40,12 @@ func (b *Ball) Update(space *resolv.Space) {
 	dx, dy := int32(b.velocity.X), int32(b.velocity.Y)
 
 	player := space.FilterByTags("player")
-	if res := player.Resolve(b.shape.collider, 0, dy); res.Colliding() && !res.Teleporting {
+	if res := player.Resolve(b.shape.collider, 0, dy); res.Colliding() {
 		b.shape.pos.Y += float64(res.ResolveY)
+		if p, ok := res.ShapeB.GetData().(*Player); ok {
+			b.velocity.Y -= float64(int(p.velocity.Y)) / 4
+			fmt.Println(p.velocity.Y)
+		}
 		b.velocity.Y *= -1.1
 	} else {
 		walls := space.FilterByTags("wall")
