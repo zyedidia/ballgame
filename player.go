@@ -8,7 +8,7 @@ import (
 const (
 	pw = 16
 	ph = 16
-	cw = 11
+	cw = 14
 	ch = 16
 
 	maxspd      = 2.0
@@ -125,6 +125,7 @@ func (p *Player) Update(space *resolv.Space) {
 	onGround := down.Colliding()
 
 	if jump > 0 && onGround {
+		// assets.GetSound("jump.ogg").Play()
 		p.velocity.Y = -jumpspd
 	}
 

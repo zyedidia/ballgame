@@ -1,6 +1,7 @@
-ballgame: assetfs_vfsdata.go
+ballgame: require
 	go build
-assetfs_vfsdata.go:
+assetfs_vfsdata.go: require
 	go run assets_generate.go
-ballgame.wasm: assetfs_vfsdata.go
+ballgame.wasm: require
 	GOOS=js GOARCH=wasm go build -o ballgame.wasm
+.PHONY: require

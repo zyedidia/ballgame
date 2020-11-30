@@ -40,6 +40,12 @@ func (r *Ring) Update(space *resolv.Space) {
 			if b.velocity.X != 0 && time.Since(r.lastpoint) >= 500*time.Millisecond {
 				r.lastpoint = time.Now()
 				score++
+				if score > best {
+					best = score
+				}
+				sfx := assets.GetSound("score.ogg")
+				sfx.Rewind()
+				sfx.Play()
 			}
 		}
 	}
