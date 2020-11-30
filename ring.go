@@ -8,9 +8,9 @@ import (
 )
 
 const (
-	rw  = 6
+	rw  = 9
 	rh  = 14
-	crw = 6
+	crw = 9
 	crh = 14
 )
 
