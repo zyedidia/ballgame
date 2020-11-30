@@ -23,14 +23,6 @@ func NewGame(md *MapData) *Game {
 	m := LoadMap(space, md)
 	objects := make([]GameObject, 0, 10)
 	objects = append(objects, LoadMap(space, md))
-	NewSegmentShape("wall", 0, height, width, height).AddTo(space)
-	NewSegmentShape("wall", 0, height, 0, 0).AddTo(space)
-	NewSegmentShape("wall", 0, 0, width, 0).AddTo(space)
-	NewSegmentShape("wall", width, height, width, 0).AddTo(space)
-
-	objects = append(objects, NewBall(space, width/2, height/2))
-	objects = append(objects, NewPlayer(space, NewKeyboard(KeyboardDefaults), width/2, height/2))
-	objects = append(objects, NewRing(space, width/2, height/3))
 
 	return &Game{
 		menu:    NewMenu(m),
@@ -39,9 +31,28 @@ func NewGame(md *MapData) *Game {
 	}
 }
 
+func (g *Game) Init(difficulty int) {
+	NewSegmentShape("wall", 0, height, width, height).AddTo(g.space)
+	NewSegmentShape("wall", 0, height, 0, 0).AddTo(g.space)
+	NewSegmentShape("wall", 0, 0, width, 0).AddTo(g.space)
+	NewSegmentShape("wall", width, height, width, 0).AddTo(g.space)
+
+	g.objects = append(g.objects, NewBall(g.space, width/2, height/2))
+	g.objects = append(g.objects, NewPlayer(g.space, NewKeyboard(KeyboardDefaults), width/2, height/2))
+	switch difficulty {
+	case diffHard:
+		g.objects = append(g.objects, NewRing(g.space, width/2, height/3))
+	case diffImpossible:
+		g.objects = append(g.objects, NewRing(g.space, width/2, height/8))
+	}
+}
+
 func (g *Game) Update() error {
 	if g.menu.active {
-		return g.menu.Update()
+		r := g.menu.Update()
+		if r == errBegin {
+			g.Init(g.menu.difficulty)
+		}
 	}
 
 	for _, o := range g.objects {
