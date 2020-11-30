@@ -2,8 +2,10 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"math/rand"
+	"os"
 	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -38,11 +40,14 @@ func main() {
 	}
 	assets.LoadAnimations()
 
-	// bytes, _ := json.MarshalIndent(DefaultMapData(), "", "    ")
-	// fmt.Println(string(bytes))
+	assets.GetMusic("music.mp3").Play()
 
 	g := NewGame(DefaultMapData())
 	if err := ebiten.RunGame(g); err != nil {
+		if err == errGameEsc {
+			fmt.Println("Quit")
+			os.Exit(0)
+		}
 		log.Fatal(err)
 	}
 }

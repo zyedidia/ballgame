@@ -12,6 +12,7 @@ var score int
 var best int
 
 type Game struct {
+	menu    *Menu
 	space   *resolv.Space
 	objects []GameObject
 }
@@ -19,8 +20,7 @@ type Game struct {
 func NewGame(md *MapData) *Game {
 	space := resolv.NewSpace()
 
-	assets.GetMusic("music.mp3").Play()
-
+	m := LoadMap(space, md)
 	objects := make([]GameObject, 0, 10)
 	objects = append(objects, LoadMap(space, md))
 	NewSegmentShape("wall", 0, height, width, height).AddTo(space)
@@ -33,12 +33,17 @@ func NewGame(md *MapData) *Game {
 	objects = append(objects, NewRing(space, width/2, height/3))
 
 	return &Game{
+		menu:    NewMenu(m),
 		space:   space,
 		objects: objects,
 	}
 }
 
 func (g *Game) Update() error {
+	if g.menu.active {
+		return g.menu.Update()
+	}
+
 	for _, o := range g.objects {
 		o.Update(g.space)
 	}
@@ -51,6 +56,11 @@ func (g *Game) Update() error {
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
+	if g.menu.active {
+		g.menu.Draw(screen)
+		return
+	}
+
 	for _, o := range g.objects {
 		o.Draw(screen)
 	}

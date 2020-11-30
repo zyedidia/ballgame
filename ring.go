@@ -35,7 +35,7 @@ func NewRing(space *resolv.Space, x, y int) *Ring {
 
 func (r *Ring) Update(space *resolv.Space) {
 	ball := space.FilterByTags("ball")
-	if res := ball.Resolve(r.shape.collider, 1, 0); res.Colliding() {
+	if res := ball.Resolve(r.shape.collider, 0, 1); res.Colliding() {
 		if b, ok := res.ShapeB.GetData().(*Ball); ok {
 			if b.velocity.X != 0 && time.Since(r.lastpoint) >= 500*time.Millisecond {
 				r.lastpoint = time.Now()
