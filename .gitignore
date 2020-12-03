@@ -1,5 +1,5 @@
-ballgame
+ballgame*
 html
 assetfs_vfsdata.go
 *.wav
-
+.DS_Store
