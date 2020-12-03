@@ -111,21 +111,11 @@ func (p *Player) Update(space *resolv.Space) {
 
 	dx, dy := int32(p.velocity.X), int32(p.velocity.Y)
 
-	// balls := space.FilterByTags("ball")
-	// collision := balls.Resolve(p.shape.collider, dx, dy)
-	// if collision.Colliding() {
-	// 	if hit > 0 {
-	// 		ball := collision.ShapeB.GetData().(*Ball)
-	// 		ball.velocity.Y = 10
-	// 	}
-	// }
-
 	walls := space.FilterByTags("wall")
 	down := walls.Resolve(p.shape.collider, 0, ph/2)
 	onGround := down.Colliding()
 
 	if jump > 0 && onGround {
-		// assets.GetSound("jump.ogg").Play()
 		p.velocity.Y = -jumpspd
 	}
 
